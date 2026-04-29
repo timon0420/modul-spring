@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodanie aktywności</title>
+</head>
+<body>
+    <h1>Dodanie aktywności</h1>
+    <nav>
+        <a th:href="@{/}">Strona główna</a>
+    </nav>
+    <hr>
+    <form action="/addActivity" method="post">
+        <input type="text" name="activity_name" placeholder="Nazwa aktywności" required>
+        <input type="text" name="activity_description" placeholder="Opis aktywności" required>
+        <input type="time" name="time" placeholder="Czas aktywności" required>
+        <input type="date" name="date" placeholder="Data aktywności" required>
+        <input type="submit" value="Dodaj">
+    </form>
+</body>
+</html>

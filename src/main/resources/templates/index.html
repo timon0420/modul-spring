@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Użytkowników</title>
+</head>
+<body>
+    <h1>Lista Użytkowników</h1>
+    <p th:text="|Użytkownik: ${data.login}|"></p>
+    <nav>
+        <a th:href="@{/logout}">Wyloguj</a>
+        <a th:href="@{/websocket}">WebSocket</a>
+        <a th:href="@{/addActivity}">Dodanie aktywności</a>
+    </nav>
+    <hr>
+    <table>
+        <thead>
+            <tr>
+                <th>Nazwa aktywności</th>
+                <th>Opis</th>
+                <th>Czas</th>
+                <th>Data</th>
+                <th>Opcje</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="activity : ${data.activities}">
+                <td th:text="${activity.activity_name}"></td>
+                <td th:text="${activity.activity_description}"></td>
+                <td th:text="${activity.time}"></td>
+                <td th:text="${#dates.format(activity.date, 'dd-MM-yyyy')}"></td>
+                <td>
+                    <form th:action="@{/delete/{id}(id=${activity.id})}" method="post"><input type="submit" value="Usuń"></form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
