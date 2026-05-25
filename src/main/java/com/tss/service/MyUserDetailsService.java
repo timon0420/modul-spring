@@ -26,5 +26,4 @@ public class MyUserDetailsService implements UserDetailsService {
             .roles("USER")
             .build();
     }
-
 }

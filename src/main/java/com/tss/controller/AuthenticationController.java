@@ -2,31 +2,33 @@ package com.tss.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tss.config.SecurityConfig.LoginRequest;
+import com.tss.config.SecurityConfig.RegisterRequest;
+import com.tss.postgres.model.User;
 import com.tss.postgres.repo.UserRepo;
-import com.tss.service.MyUserDetailsService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
  
-    // @Autowired
-    // private AuthenticationManager authenticationManager;
-
     @Autowired
-    private MyUserDetailsService userDetailsService;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private UserRepo userRepo;
@@ -45,5 +47,32 @@ public class AuthenticationController {
         SecurityContextHolder.clearContext();
 
         return new ResponseEntity<>("Logged out", HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        Authentication authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getLogin(), loginRequest.getPassword());
+        Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
+
+        SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
+
+        HttpSession session = request.getSession();
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+        return new ResponseEntity<>("Logged in", HttpStatus.OK);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
+        if (userRepo.findByLogin(registerRequest.getLogin()).isPresent()) {
+            return new ResponseEntity<>("User already exists", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = new User();
+        user.setLogin(registerRequest.getLogin());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        userRepo.save(user);
+
+        return new ResponseEntity<>("User registered", HttpStatus.OK);
     }
 }
