@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.tss.mongodb.model.UserActivity;
 import com.tss.mongodb.repo.ActivityRepo;
@@ -88,7 +89,7 @@ public class MainController {
     
 
     @PostMapping("/addActivity")
-    public String addActivity(@RequestParam String activity_name, @RequestParam String activity_description, @RequestParam String time, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal) {
+    public String addActivity(@RequestParam String activity_name, @RequestParam String activity_description, @RequestParam String start_time,@RequestParam Number time, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal) {
         String login = principal.getName();
 
         UserActivity userActivity = activityRepo.findByLogin(login).orElseGet(() -> {
@@ -101,9 +102,36 @@ public class MainController {
         Activity newActivity = new Activity();
         newActivity.setActivity_name(activity_name);
         newActivity.setActivity_description(activity_description);
+        newActivity.setStart_time(start_time);
         newActivity.setTime(time);
         newActivity.setDate(date);
         userActivity.getActivities().add(newActivity);
+        activityRepo.save(userActivity);
+
+        return "redirect:/";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editActivityForm(@PathVariable String id, Model model, Principal principal) {
+        String login = principal.getName();
+        UserActivity userActivity = activityRepo.findByLogin(login).orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst().orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
+        model.addAttribute("activity", activity);
+        return "editActivityForm";
+    }
+
+    @PutMapping("/edit/{id}")
+    public String editActivity(@RequestParam String activity_name, @RequestParam String activity_description, @RequestParam String start_time,@RequestParam Number time, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal, @PathVariable String id) {
+        String login = principal.getName();
+
+        UserActivity userActivity = activityRepo.findByLogin(login).orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst().orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
+
+        activity.setActivity_name(activity_name);
+        activity.setActivity_description(activity_description);
+        activity.setStart_time(start_time);
+        activity.setTime(time);
+        activity.setDate(date);
         activityRepo.save(userActivity);
 
         return "redirect:/";

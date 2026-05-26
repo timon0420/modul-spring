@@ -14,8 +14,11 @@ public class Activity {
     @Field("activity_description")
     private String activity_description;
 
+    @Field("start_time")
+    private Object start_time;
+
     @Field("time")
-    private Object time;
+    private Number time;
 
     @Field("date")
     private Date date;
@@ -48,11 +51,19 @@ public class Activity {
         this.activity_description = activity_description;
     }
 
+    public Object getStart_time() {
+        return start_time.toString();
+    }
+
+    public void setStart_time(Object starTime) {
+        this.start_time = starTime;
+    }
+
     public Object getTime() {
         return time.toString();
     }
 
-    public void setTime(Object time) {
+    public void setTime(Number time) {
         this.time = time;
     }
 

@@ -29,7 +29,9 @@ public class SecurityConfig {
         .and()
         .formLogin().permitAll()
         .and()
-        .logout().permitAll();
+        .logout().permitAll()
+        .and().requiresChannel()
+        .anyRequest().requiresSecure();
         return http.build();
     }
 

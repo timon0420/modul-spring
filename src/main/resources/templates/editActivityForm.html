@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edycja aktywności</title>
+</head>
+<body>
+    <h1>Edycja aktywności</h1>
+    <nav>
+        <a th:href="@{/}">Strona główna</a>
+    </nav>
+    <hr>
+    <form th:action="@{/edit/{id}(id=${activity.id})}" th:method="put">
+        <input type="text" name="activity_name" placeholder="Nazwa aktywności" th:value="${activity.activity_name}" required>
+        <input type="text" name="activity_description" placeholder="Opis aktywności" th:value="${activity.activity_description}" required>
+        <input type="time" name="start_time" placeholder="Czas rozpoczęcia aktywności" th:value="${activity.start_time}" required>
+        <input type="number" name="time" placeholder="Czas trwania aktywności" th:value="${activity.time}" required>
+        <input type="date" name="date" placeholder="Data aktywności" th:value="${#dates.format(activity.date, 'yyyy-MM-dd')}" required>
+        <input type="submit" value="Edytuj">
+    </form>
+</body>
+</html>

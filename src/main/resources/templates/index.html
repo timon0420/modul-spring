@@ -12,6 +12,10 @@
         <a th:href="@{/logout}">Wyloguj</a>
         <a th:href="@{/websocket}">WebSocket</a>
         <a th:href="@{/addActivity}">Dodanie aktywności</a>
+        <p>Endpointy API:</p>
+        <a th:href="@{/api/all_activities}">/api/all_activities</a>
+        <a th:href="@{/api/activities}">/api/activities</a>
+        <a th:href="@{/api/activities/add}">/api/activities/add</a>
     </nav>
     <hr>
     <table>
@@ -19,7 +23,8 @@
             <tr>
                 <th>Nazwa aktywności</th>
                 <th>Opis</th>
-                <th>Czas</th>
+                <th>Czas rozpoczęcia</th>
+                <th>Czas trwania</th>
                 <th>Data</th>
                 <th>Opcje</th>
             </tr>
@@ -28,10 +33,12 @@
             <tr th:each="activity : ${data.activities}">
                 <td th:text="${activity.activity_name}"></td>
                 <td th:text="${activity.activity_description}"></td>
+                <td th:text="${activity.start_time}"></td>
                 <td th:text="${activity.time}"></td>
                 <td th:text="${#dates.format(activity.date, 'dd-MM-yyyy')}"></td>
                 <td>
                     <form th:action="@{/delete/{id}(id=${activity.id})}" method="post"><input type="submit" value="Usuń"></form>
+                    <form th:action="@{/edit/{id}(id=${activity.id})}" method="get"><input type="submit" value="Edytuj"></form>
                 </td>
             </tr>
         </tbody>
