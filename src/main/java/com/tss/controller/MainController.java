@@ -4,6 +4,9 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -29,6 +32,24 @@ public class MainController {
     private final UserRepo userRepo;
     private final ActivityRepo activityRepo;
 
+    @Autowired
+    BuildProperties buildProperties;
+
+    @Value("${myparams.jdkversion}")
+    String jdkVersion;
+
+    @Value("${myparams.springbootversion}")
+    String springBootVersion;
+
+    @Value("${application.name}")
+    String applicationName;
+
+    @Value("${build.version}")
+    String buildVersion;
+
+    @Value("${build.timestamp}")
+    String buildTimestamp;
+
     public MainController(UserRepo userRepo, PasswordEncoder passwordEncoder, ActivityRepo activityRepo) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
@@ -43,6 +64,12 @@ public class MainController {
             .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
 
         model.addAttribute("data", userActivity);
+        model.addAttribute("jdkVersion", jdkVersion);
+        model.addAttribute("springBootVersion", springBootVersion);
+        model.addAttribute("applicationName", applicationName);
+        model.addAttribute("buildVersion", buildVersion);
+        model.addAttribute("buildTimestamp", buildTimestamp);
+        
         return "index";
     }
 

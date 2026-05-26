@@ -10,6 +10,8 @@
     <p th:text="|Użytkownik: ${data.login}|"></p>
     <nav>
         <a th:href="@{/logout}">Wyloguj</a>
+        <a th:href="@{/actuator}">Actuator</a>
+        <a th:href="@{/actuator/info}">Actuator info</a>
         <a th:href="@{/websocket}">WebSocket</a>
         <a th:href="@{/addActivity}">Dodanie aktywności</a>
         <p>Endpointy API:</p>
@@ -17,6 +19,24 @@
         <a th:href="@{/api/activities}">/api/activities</a>
         <a th:href="@{/api/activities/add}">/api/activities/add</a>
     </nav>
+    <hr>
+        <ul>
+            <li>
+                Wersja JDK: <span th:text="${jdkVersion}"></span>
+            </li>
+            <li>    
+                Wersja Spring Boot: <span th:text="${springBootVersion}"></span>
+            </li>
+            <li>
+                Nazwa aplikacji: <span th:text="${applicationName}"></span>
+            </li>
+            <li>
+                Wersja builda: <span th:text="${buildVersion}"></span>
+            </li>
+            <li>
+                Czas kompilacji: <span th:text="${buildTimestamp}"></span>
+            </li>
+        </ul>
     <hr>
     <table>
         <thead>
