@@ -38,7 +38,8 @@
             </li>
         </ul>
     <hr>
-    <table>
+    <p th:if="${data.activities.size() == 0}">Brak aktywności w bazie danych</p>
+    <table th:if="${data.activities.size() > 0}">
         <thead>
             <tr>
                 <th>Nazwa aktywności</th>
@@ -63,5 +64,7 @@
             </tr>
         </tbody>
     </table>
+    <hr>
+    <p>Liczba odczytów z bazy danych w trakcie sesji: <span th:text="${counter}"></span></p>
 </body>
 </html>

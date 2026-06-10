@@ -22,6 +22,7 @@ import com.tss.postgres.model.User;
 import com.tss.postgres.repo.UserRepo;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.tss.components.SessionComponent;
 import com.tss.mongodb.model.Activity;
 
 
@@ -31,6 +32,9 @@ public class MainController {
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
     private final ActivityRepo activityRepo;
+
+    @Autowired
+    SessionComponent sessionComponentQuery;
 
     @Autowired
     BuildProperties buildProperties;
@@ -60,8 +64,14 @@ public class MainController {
     public String index(Model model, Principal principal) {
         String login = principal.getName();
 
-        UserActivity userActivity = activityRepo.findByLogin(login)
-            .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        UserActivity userActivity = activityRepo.findByLogin(login).orElseGet(() -> {
+            UserActivity newUA = new UserActivity();
+            newUA.setLogin(login);
+            newUA.setActivities(new ArrayList<>());
+            return newUA;
+        });
+
+        sessionComponentQuery.incrementCounter();
 
         model.addAttribute("data", userActivity);
         model.addAttribute("jdkVersion", jdkVersion);
@@ -69,7 +79,9 @@ public class MainController {
         model.addAttribute("applicationName", applicationName);
         model.addAttribute("buildVersion", buildVersion);
         model.addAttribute("buildTimestamp", buildTimestamp);
-        
+
+        model.addAttribute("counter", sessionComponentQuery.getCounter());
+
         return "index";
     }
 
