@@ -24,11 +24,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.tss.components.SessionComponent;
 import com.tss.mongodb.model.Activity;
-
+import com.tss.mongodb.model.DailyLimits;
+import com.tss.mongodb.model.ActivityLimit;
+import com.tss.mongodb.model.Notification;
 
 @Controller
 public class MainController {
-    
+
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
     private final ActivityRepo activityRepo;
@@ -108,7 +110,8 @@ public class MainController {
     public String deleteActivity(@PathVariable String id, Principal principal) {
         String login = principal.getName();
 
-        UserActivity userActivity = activityRepo.findByLogin(login).orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
 
         boolean removed = userActivity.getActivities().removeIf(activity -> activity.getId().equals(id));
 
@@ -116,8 +119,9 @@ public class MainController {
             throw new RuntimeException("Nie znaleziono aktywności do usuniecia");
         } else {
             activityRepo.save(userActivity);
+            triggerGoAnalysisAsync(login);
         }
-        
+
         return "redirect:/";
     }
 
@@ -125,10 +129,11 @@ public class MainController {
     public String addActivityForm() {
         return "addActivityForm";
     }
-    
 
     @PostMapping("/addActivity")
-    public String addActivity(@RequestParam String activity_name, @RequestParam String activity_description, @RequestParam String start_time,@RequestParam Number time, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal) {
+    public String addActivity(@RequestParam String activity_name, @RequestParam String activity_description,
+            @RequestParam String start_time, @RequestParam Number time,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal) {
         String login = principal.getName();
 
         UserActivity userActivity = activityRepo.findByLogin(login).orElseGet(() -> {
@@ -146,6 +151,7 @@ public class MainController {
         newActivity.setDate(date);
         userActivity.getActivities().add(newActivity);
         activityRepo.save(userActivity);
+        triggerGoAnalysisAsync(login);
 
         return "redirect:/";
     }
@@ -153,18 +159,25 @@ public class MainController {
     @GetMapping("/edit/{id}")
     public String editActivityForm(@PathVariable String id, Model model, Principal principal) {
         String login = principal.getName();
-        UserActivity userActivity = activityRepo.findByLogin(login).orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
-        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst().orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst()
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
         model.addAttribute("activity", activity);
         return "editActivityForm";
     }
 
     @PutMapping("/edit/{id}")
-    public String editActivity(@RequestParam String activity_name, @RequestParam String activity_description, @RequestParam String start_time,@RequestParam Number time, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal, @PathVariable String id) {
+    public String editActivity(@RequestParam String activity_name, @RequestParam String activity_description,
+            @RequestParam String start_time, @RequestParam Number time,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date, Principal principal,
+            @PathVariable String id) {
         String login = principal.getName();
 
-        UserActivity userActivity = activityRepo.findByLogin(login).orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
-        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst().orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika w MongoDB"));
+        Activity activity = userActivity.getActivities().stream().filter(a -> a.getId().equals(id)).findFirst()
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono aktywnosci"));
 
         activity.setActivity_name(activity_name);
         activity.setActivity_description(activity_description);
@@ -172,8 +185,84 @@ public class MainController {
         activity.setTime(time);
         activity.setDate(date);
         activityRepo.save(userActivity);
+        triggerGoAnalysisAsync(login);
 
         return "redirect:/";
     }
-    
+
+    @PostMapping("/limits/set")
+    public String setLimits(@RequestParam(required = false) Integer globalLimit,
+            @RequestParam(required = false) String activityName,
+            @RequestParam(required = false) Integer activityLimit,
+            Principal principal) {
+        String login = principal.getName();
+        UserActivity userActivity = activityRepo.findByLogin(login).orElseGet(() -> {
+            UserActivity newUA = new UserActivity();
+            newUA.setLogin(login);
+            newUA.setActivities(new ArrayList<>());
+            return newUA;
+        });
+
+        DailyLimits dailyLimits = userActivity.getDailyLimits();
+        if (dailyLimits == null) {
+            dailyLimits = new DailyLimits();
+            dailyLimits.setActivities(new ArrayList<>());
+        }
+
+        if (globalLimit != null) {
+            dailyLimits.setGlobalLimit(globalLimit);
+        }
+
+        if (activityName != null && !activityName.trim().isEmpty() && activityLimit != null) {
+            boolean exists = false;
+            for (ActivityLimit limit : dailyLimits.getActivities()) {
+                if (limit.getActivityName().equalsIgnoreCase(activityName.trim())) {
+                    limit.setLimit(activityLimit);
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                dailyLimits.getActivities().add(new ActivityLimit(activityName.trim(), activityLimit));
+            }
+        }
+
+        userActivity.setDailyLimits(dailyLimits);
+        activityRepo.save(userActivity);
+
+        triggerGoAnalysisAsync(login);
+
+        return "redirect:/";
+    }
+
+    @PostMapping("/notifications/read/{id}")
+    public String readNotification(@PathVariable String id, Principal principal) {
+        String login = principal.getName();
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        if (userActivity.getNotifications() != null) {
+            for (Notification notification : userActivity.getNotifications()) {
+                if (notification.getId().equals(id)) {
+                    notification.setRead(true);
+                    break;
+                }
+            }
+            activityRepo.save(userActivity);
+        }
+        return "redirect:/";
+    }
+
+    private void triggerGoAnalysisAsync(String login) {
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("http://localhost:8080/analyze?login=" + login);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception e) {
+                System.err.println("Failed to trigger Go analysis: " + e.getMessage());
+            }
+        }).start();
+    }
 }
