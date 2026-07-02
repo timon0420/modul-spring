@@ -11,7 +11,7 @@
 	<groupId>com.tss</groupId>
 	<artifactId>projekt_medela_szymon</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>projekt_medela_szymon</name>
 	<description/>
 	<url/>
