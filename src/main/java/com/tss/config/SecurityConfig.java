@@ -18,20 +18,20 @@ import lombok.Data;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
-        .authorizeHttpRequests()
-        .antMatchers("/register", "/api/**").permitAll()
-        .anyRequest()
-        .authenticated()
-        .and()
-        .formLogin().permitAll()
-        .and()
-        .logout().permitAll()
-        .and().requiresChannel()
-        .anyRequest().requiresSecure();
+                .authorizeHttpRequests()
+                .antMatchers("/register", "/api/**").permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .formLogin().permitAll()
+                .and()
+                .logout().permitAll();
+        // .and().requiresChannel()
+        // .anyRequest().requiresSecure();
         return http.build();
     }
 
@@ -42,7 +42,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder, MyUserDetailsService userDetailsService) {
+    public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder,
+            MyUserDetailsService userDetailsService) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
