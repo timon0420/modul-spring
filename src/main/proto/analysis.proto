@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package analysis;
+
+option java_package = "com.tss.grpc.analysis";
+option java_multiple_files = true;
+
+service AnalysisService {
+  rpc AnalyzeUser (AnalyzeRequest) returns (AnalysisResponse);
+}
+
+message AnalyzeRequest {
+  string login = 1;
+}
+
+message Notification {
+  string id = 1;
+  string type = 2;
+  string message = 3;
+  string created_at = 4;
+  bool read = 5;
+}
+
+message AnalysisResponse {
+  string login = 1;
+  string date = 2;
+  int32 total_duration = 3;
+  bool global_limit_exceeded = 4;
+  repeated string exceeded_limits = 5;
+  repeated Notification new_notifications = 6;
+}

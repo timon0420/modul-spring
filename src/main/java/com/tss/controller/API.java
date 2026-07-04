@@ -21,15 +21,18 @@ import com.tss.mongodb.model.DailyLimits;
 import com.tss.mongodb.model.ActivityLimit;
 import com.tss.mongodb.model.Notification;
 import com.tss.mongodb.repo.ActivityRepo;
+import com.tss.grpc.GrpcAnalysisClientService;
 
 @RestController
 @RequestMapping("/api")
 public class API {
 
     private final ActivityRepo activityRepo;
+    private final GrpcAnalysisClientService grpcAnalysisClientService;
 
-    public API(ActivityRepo activityRepo) {
+    public API(ActivityRepo activityRepo, GrpcAnalysisClientService grpcAnalysisClientService) {
         this.activityRepo = activityRepo;
+        this.grpcAnalysisClientService = grpcAnalysisClientService;
     }
 
     @GetMapping("/all_activities")
@@ -174,11 +177,7 @@ public class API {
     private void triggerGoAnalysisAsync(String login) {
         new Thread(() -> {
             try {
-                java.net.URL url = new java.net.URL("http://localhost:8080/analyze?login=" + login);
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.getResponseCode();
-                conn.disconnect();
+                grpcAnalysisClientService.analyzeUser(login);
             } catch (Exception e) {
                 System.err.println("Failed to trigger Go analysis: " + e.getMessage());
             }
