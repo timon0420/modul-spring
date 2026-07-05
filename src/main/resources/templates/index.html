@@ -170,7 +170,7 @@
 
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const host = window.location.host;
-            const wsUri = `${protocol}//${host}/ws?login=${userLogin}`;
+            const wsUri = `wss://modul-go.onrender.com/ws?login=${userLogin}`;
             console.log("Łączenie z WebSocket mikroserwisu Go:", wsUri);
 
             const ws = new WebSocket(wsUri);
