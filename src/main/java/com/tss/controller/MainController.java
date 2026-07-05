@@ -1,6 +1,8 @@
 package com.tss.controller;
 
 import java.security.Principal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -56,6 +58,9 @@ public class MainController {
     @Value("${build.timestamp}")
     String buildTimestamp;
 
+    @Value("${analysis.gateway.base-url}")
+    String analysisGatewayBaseUrl;
+
     public MainController(UserRepo userRepo, PasswordEncoder passwordEncoder, ActivityRepo activityRepo) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
@@ -76,11 +81,13 @@ public class MainController {
         sessionComponentQuery.incrementCounter();
 
         model.addAttribute("data", userActivity);
+        model.addAttribute("login", login);
         model.addAttribute("jdkVersion", jdkVersion);
         model.addAttribute("springBootVersion", springBootVersion);
         model.addAttribute("applicationName", applicationName);
         model.addAttribute("buildVersion", buildVersion);
         model.addAttribute("buildTimestamp", buildTimestamp);
+        model.addAttribute("analysisGatewayBaseUrl", analysisGatewayBaseUrl);
 
         model.addAttribute("counter", sessionComponentQuery.getCounter());
 
@@ -255,7 +262,11 @@ public class MainController {
     private void triggerGoAnalysisAsync(String login) {
         new Thread(() -> {
             try {
-                java.net.URL url = new java.net.URL("http://localhost:8080/analyze?login=" + login);
+                String baseUrl = analysisGatewayBaseUrl.endsWith("/")
+                        ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
+                        : analysisGatewayBaseUrl;
+                String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
+                java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
                 java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.getResponseCode();

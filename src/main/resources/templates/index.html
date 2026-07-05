@@ -521,12 +521,16 @@
     </footer>
 
     <script th:inline="javascript">
-        const userLogin = "[[${data.login}]]";
+        const userLogin = /*[[${login}]]*/ "";
+        const analysisGatewayBaseUrl = /*[[${analysisGatewayBaseUrl}]]*/ "http://localhost:8080";
 
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const host = window.location.host;
-            const wsUri = `wss://modul-go.onrender.com/ws?login=${userLogin}`;
+            const gatewayUrl = new URL(analysisGatewayBaseUrl);
+            gatewayUrl.protocol = protocol;
+            gatewayUrl.pathname = '/ws';
+            gatewayUrl.search = `?login=${encodeURIComponent(userLogin)}`;
+            const wsUri = gatewayUrl.toString();
             console.log("Łączenie z WebSocket mikroserwisu Go:", wsUri);
 
             const ws = new WebSocket(wsUri);
