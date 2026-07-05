@@ -487,14 +487,14 @@
             <div class="card">
                 <div class="card-title">Ostrzeżenia i Alerty</div>
 
-                <div class="notifications-container">
+                <div id="notifications-container" class="notifications-container">
                     <div th:if="${data.notifications == null || data.notifications.size() == 0}" class="empty-state">
                         Brak powiadomień.
                     </div>
 
                     <div th:if="${data.notifications != null}">
                         <div th:each="notif : ${data.notifications}" th:classappend="${notif.read} ? 'read' : ''"
-                            class="notification-card">
+                            th:attr="data-notification-id=${notif.id}" class="notification-card">
                             <div class="notification-msg" th:text="${notif.message}">Treść powiadomienia</div>
                             <div class="notification-meta">
                                 <span th:text="${#dates.format(notif.createdAt, 'dd-MM-yyyy HH:mm')}">Data</span>
@@ -544,6 +544,7 @@
                 try {
                     const data = JSON.parse(evt.data);
                     if (data && data.message) {
+                        addNotificationToPage(data);
                         showToast(data.type || "ALARM", data.message);
                     }
                 } catch (e) {
@@ -559,6 +560,66 @@
             ws.onerror = function (err) {
                 console.error("Błąd WebSocket Go:", err);
             };
+        }
+
+        function addNotificationToPage(notification) {
+            const container = document.getElementById("notifications-container");
+            if (!container || !notification.id) {
+                return;
+            }
+
+            const exists = Array.from(container.querySelectorAll(".notification-card"))
+                .some(card => card.dataset.notificationId === String(notification.id));
+            if (exists) {
+                return;
+            }
+
+            const emptyState = container.querySelector(".empty-state");
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const card = document.createElement("div");
+            card.className = "notification-card";
+            card.dataset.notificationId = String(notification.id);
+
+            const message = document.createElement("div");
+            message.className = "notification-msg";
+            message.textContent = notification.message;
+
+            const meta = document.createElement("div");
+            meta.className = "notification-meta";
+
+            const date = document.createElement("span");
+            date.textContent = formatNotificationDate(notification.created_at);
+
+            const form = document.createElement("form");
+            form.method = "post";
+            form.action = `/notifications/read/${encodeURIComponent(notification.id)}`;
+
+            const button = document.createElement("button");
+            button.type = "submit";
+            button.className = "btn-dismiss";
+            button.textContent = "Oznacz jako przeczytane";
+
+            form.appendChild(button);
+            meta.append(date, form);
+            card.append(message, meta);
+            container.prepend(card);
+        }
+
+        function formatNotificationDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "Teraz";
+            }
+            return new Intl.DateTimeFormat("pl-PL", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }).format(date);
         }
 
         function showToast(type, message) {
