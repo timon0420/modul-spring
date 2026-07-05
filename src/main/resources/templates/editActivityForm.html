@@ -4,20 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edycja aktywności</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        nav {
+            display: flex;
+            margin-bottom: 24px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: #fff;
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-family: inherit;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+    </style>
 </head>
 <body>
-    <h1>Edycja aktywności</h1>
-    <nav>
-        <a th:href="@{/}">Strona główna</a>
-    </nav>
-    <hr>
-    <form th:action="@{/edit/{id}(id=${activity.id})}" th:method="put">
-        <input type="text" name="activity_name" placeholder="Nazwa aktywności" th:value="${activity.activity_name}" required>
-        <input type="text" name="activity_description" placeholder="Opis aktywności" th:value="${activity.activity_description}" required>
-        <input type="time" name="start_time" placeholder="Czas rozpoczęcia aktywności" th:value="${activity.start_time}" required>
-        <input type="number" name="time" placeholder="Czas trwania aktywności" th:value="${activity.time}" required>
-        <input type="date" name="date" placeholder="Data aktywności" th:value="${#dates.format(activity.date, 'yyyy-MM-dd')}" required>
-        <input type="submit" value="Edytuj">
-    </form>
+
+    <div class="container">
+        <header>
+            <h1>Edycja aktywności</h1>
+            <nav>
+                <a class="nav-link" th:href="@{/}">Strona główna</a>
+            </nav>
+        </header>
+
+        <div class="card">
+            <form th:action="@{/edit/{id}(id=${activity.id})}" th:method="put">
+                <div class="form-group">
+                    <label for="activity_name">Nazwa aktywności</label>
+                    <input type="text" id="activity_name" name="activity_name" class="form-control" th:value="${activity.activity_name}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="activity_description">Opis aktywności</label>
+                    <input type="text" id="activity_description" name="activity_description" class="form-control" th:value="${activity.activity_description}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="start_time">Czas rozpoczęcia</label>
+                    <input type="time" id="start_time" name="start_time" class="form-control" th:value="${activity.start_time}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="time">Czas trwania (minuty)</label>
+                    <input type="number" id="time" name="time" class="form-control" th:value="${activity.time}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Data aktywności</label>
+                    <input type="date" id="date" name="date" class="form-control" th:value="${#dates.format(activity.date, 'yyyy-MM-dd')}" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Zapisz zmiany</button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

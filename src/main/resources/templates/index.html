@@ -6,11 +6,374 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Aktywności Cyfrowych</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .logo-section h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .nav-link.logout {
+            margin-left: auto;
+        }
+
+        .nav-link.logout:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-link.logout {
+                margin-left: 0;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 400;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 12px 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background-color 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-edit {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .btn-edit:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-delete {
+            background-color: #fef2f2;
+            color: var(--danger);
+        }
+
+        .btn-delete:hover {
+            background-color: #fee2e2;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+        }
+
+        .limits-list {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .limit-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            padding: 6px 0;
+        }
+
+        .limit-name {
+            color: var(--text-muted);
+        }
+
+        .limit-val {
+            font-weight: 500;
+        }
+
+        .notification-card {
+            padding: 12px;
+            background-color: #fffbc6;
+            border-left: 4px solid #eab308;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .notification-card.read {
+            background-color: #f8f9fa;
+            border-left-color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .notification-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .btn-dismiss {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: inherit;
+            font-size: 0.75rem;
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 20px 0;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            width: 300px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-header {
+            background-color: #fef2f2;
+            color: var(--danger);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toast-header button {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .toast-body {
+            padding: 12px;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
 </head>
 
 <body>
-
 
     <div id="toast-container"></div>
 
@@ -78,10 +441,7 @@
             </div>
         </div>
 
-
         <div>
-
-            <!-- Limits Panel -->
             <div class="card">
                 <div class="card-title">Dobowe Limity Czasu</div>
 
@@ -124,7 +484,6 @@
                 </form>
             </div>
 
-
             <div class="card">
                 <div class="card-title">Ostrzeżenia i Alerty</div>
 
@@ -161,13 +520,10 @@
         </div>
     </footer>
 
-
     <script th:inline="javascript">
-
         const userLogin = 'tomcat';
 
         function initWebSocket() {
-
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const host = window.location.host;
             const wsUri = `wss://modul-go.onrender.com/ws?login=${userLogin}`;
@@ -187,7 +543,6 @@
                         showToast(data.type || "ALARM", data.message);
                     }
                 } catch (e) {
-
                     showToast("ALERT", evt.data);
                 }
             };
@@ -219,11 +574,9 @@
 
             container.appendChild(toast);
 
-
             setTimeout(() => {
                 toast.classList.add("show");
             }, 50);
-
 
             setTimeout(() => {
                 toast.classList.remove("show");
@@ -233,9 +586,7 @@
             }, 6000);
         }
 
-
         window.addEventListener("load", initWebSocket);
-
     </script>
 </body>
 
