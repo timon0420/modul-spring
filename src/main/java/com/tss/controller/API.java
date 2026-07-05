@@ -1,5 +1,7 @@
 package com.tss.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.tss.mongodb.model.Activity;
 import com.tss.mongodb.model.UserActivity;
@@ -29,6 +32,9 @@ public class API {
 
     private final ActivityRepo activityRepo;
     private final GrpcAnalysisClientService grpcAnalysisClientService;
+
+    @Value("${analysis.gateway.base-url}")
+    private String analysisGatewayBaseUrl;
 
     public API(ActivityRepo activityRepo, GrpcAnalysisClientService grpcAnalysisClientService) {
         this.activityRepo = activityRepo;
@@ -177,7 +183,15 @@ public class API {
     private void triggerGoAnalysisAsync(String login) {
         new Thread(() -> {
             try {
-                grpcAnalysisClientService.analyzeUser(login);
+                String baseUrl = analysisGatewayBaseUrl.endsWith("/")
+                        ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
+                        : analysisGatewayBaseUrl;
+                String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
+                java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.getResponseCode();
+                conn.disconnect();
             } catch (Exception e) {
                 System.err.println("Failed to trigger Go analysis: " + e.getMessage());
             }
