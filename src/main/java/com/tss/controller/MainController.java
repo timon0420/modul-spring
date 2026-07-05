@@ -126,7 +126,7 @@ public class MainController {
             throw new RuntimeException("Nie znaleziono aktywności do usuniecia");
         } else {
             activityRepo.save(userActivity);
-            triggerGoAnalysisAsync(login);
+            triggerGoAnalysis(login);
         }
 
         return "redirect:/";
@@ -158,7 +158,7 @@ public class MainController {
         newActivity.setDate(date);
         userActivity.getActivities().add(newActivity);
         activityRepo.save(userActivity);
-        triggerGoAnalysisAsync(login);
+        triggerGoAnalysis(login);
 
         return "redirect:/";
     }
@@ -192,7 +192,7 @@ public class MainController {
         activity.setTime(time);
         activity.setDate(date);
         activityRepo.save(userActivity);
-        triggerGoAnalysisAsync(login);
+        triggerGoAnalysis(login);
 
         return "redirect:/";
     }
@@ -237,7 +237,7 @@ public class MainController {
         userActivity.setDailyLimits(dailyLimits);
         activityRepo.save(userActivity);
 
-        triggerGoAnalysisAsync(login);
+        triggerGoAnalysis(login);
 
         return "redirect:/";
     }
@@ -259,21 +259,30 @@ public class MainController {
         return "redirect:/";
     }
 
-    private void triggerGoAnalysisAsync(String login) {
-        new Thread(() -> {
-            try {
-                String baseUrl = analysisGatewayBaseUrl.endsWith("/")
-                        ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
-                        : analysisGatewayBaseUrl;
-                String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
-                java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.getResponseCode();
-                conn.disconnect();
-            } catch (Exception e) {
-                System.err.println("Failed to trigger Go analysis: " + e.getMessage());
+    private void triggerGoAnalysis(String login) {
+        java.net.HttpURLConnection conn = null;
+        try {
+            String baseUrl = analysisGatewayBaseUrl.endsWith("/")
+                    ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
+                    : analysisGatewayBaseUrl;
+            String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
+            java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
+            conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(35_000);
+
+            int status = conn.getResponseCode();
+            if (status < 200 || status >= 300) {
+                throw new IllegalStateException("Go analysis returned HTTP " + status);
             }
-        }).start();
+        } catch (Exception e) {
+            // Nie przerywamy zapisu aktywności, ale błąd jest widoczny w logach Rendera.
+            System.err.println("Failed to trigger Go analysis for " + login + ": " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
     }
 }
