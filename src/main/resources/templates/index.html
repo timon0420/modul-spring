@@ -521,7 +521,7 @@
     </footer>
 
     <script th:inline="javascript">
-        const userLogin = 'tomcat';
+        const userLogin = `${data.login}`;
 
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
