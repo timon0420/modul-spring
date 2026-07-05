@@ -108,11 +108,6 @@ public class MainController {
         return "redirect:/";
     }
 
-    @GetMapping("/websocket")
-    public String getMethodName() {
-        return "websocket";
-    }
-
     @PostMapping("/delete/{id}")
     public String deleteActivity(@PathVariable String id, Principal principal) {
         String login = principal.getName();
