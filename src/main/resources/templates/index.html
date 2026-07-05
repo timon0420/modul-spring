@@ -522,7 +522,7 @@
 
     <script th:inline="javascript">
         const userLogin = /*[[${login}]]*/ "";
-        const analysisGatewayBaseUrl = /*[[${analysisGatewayBaseUrl}]]*/ "http://localhost:8080";
+        const analysisGatewayBaseUrl = "https://modul-go.onrender.com"
 
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
