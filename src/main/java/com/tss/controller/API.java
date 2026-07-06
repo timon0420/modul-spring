@@ -60,14 +60,18 @@ public class API {
             return newUA;
         });
 
+        if (userActivity.getActivities() == null) {
+            userActivity.setActivities(new ArrayList<>());
+        }
+
         if (newActivity.getId() == null) {
             newActivity.setId(java.util.UUID.randomUUID().toString());
         }
 
         userActivity.getActivities().add(newActivity);
-        String res = activityRepo.save(userActivity).toString();
-        triggerGoAnalysis(login);
-        return res;
+        UserActivity saved = activityRepo.save(userActivity);
+        analyzeLimitsAndNotify(login);
+        return saved.toString();
     }
 
     @DeleteMapping("/activities/delete/{id}")
@@ -83,7 +87,7 @@ public class API {
             throw new RuntimeException("Nie znaleziono aktywności do usuniecia");
         } else {
             activityRepo.save(userActivity);
-            triggerGoAnalysis(login);
+            analyzeLimitsAndNotify(login);
         }
 
         return new ResponseEntity<>("Activity deleted", HttpStatus.OK);
@@ -110,7 +114,7 @@ public class API {
         }
         activity.setDate(editedActivity.getDate());
         activityRepo.save(userActivity);
-        triggerGoAnalysis(login);
+        analyzeLimitsAndNotify(login);
 
         return new ResponseEntity<>("Activity edited", HttpStatus.OK);
     }
@@ -156,7 +160,7 @@ public class API {
 
         userActivity.setDailyLimits(dailyLimits);
         activityRepo.save(userActivity);
-        triggerGoAnalysis(login);
+        analyzeLimitsAndNotify(login);
 
         return new ResponseEntity<>("Limits set", HttpStatus.OK);
     }
@@ -170,7 +174,7 @@ public class API {
             limits.setGlobalLimit(null);
             removeEmptyLimits(userActivity, limits);
             activityRepo.save(userActivity);
-            triggerGoAnalysis(principal.getName());
+            analyzeLimitsAndNotify(principal.getName());
         }
         return new ResponseEntity<>("Global limit deleted", HttpStatus.OK);
     }
@@ -184,7 +188,7 @@ public class API {
             limits.getActivities().removeIf(limit -> limit.getActivityName().equalsIgnoreCase(activityName));
             removeEmptyLimits(userActivity, limits);
             activityRepo.save(userActivity);
-            triggerGoAnalysis(principal.getName());
+            analyzeLimitsAndNotify(principal.getName());
         }
         return new ResponseEntity<>("Activity limit deleted", HttpStatus.OK);
     }
@@ -215,7 +219,7 @@ public class API {
         return new ResponseEntity<>("Notification marked as read", HttpStatus.OK);
     }
 
-    private void triggerGoAnalysis(String login) {
+    private void analyzeLimitsAndNotify(String login) {
         analysisNotificationService.analyzeAndNotify(login);
     }
 
