@@ -23,6 +23,10 @@ import com.tss.config.SecurityConfig.RegisterRequest;
 import com.tss.postgres.model.User;
 import com.tss.postgres.repo.UserRepo;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
