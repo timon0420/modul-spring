@@ -1,8 +1,8 @@
 package com.tss.controller;
 
+import java.security.Principal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +25,7 @@ import com.tss.mongodb.model.ActivityLimit;
 import com.tss.mongodb.model.Notification;
 import com.tss.mongodb.repo.ActivityRepo;
 import com.tss.grpc.GrpcAnalysisClientService;
+import com.tss.service.AnalysisNotificationService;
 
 @RestController
 @RequestMapping("/api")
@@ -32,13 +33,16 @@ public class API {
 
     private final ActivityRepo activityRepo;
     private final GrpcAnalysisClientService grpcAnalysisClientService;
+    private final AnalysisNotificationService analysisNotificationService;
 
     @Value("${analysis.gateway.base-url}")
     private String analysisGatewayBaseUrl;
 
-    public API(ActivityRepo activityRepo, GrpcAnalysisClientService grpcAnalysisClientService) {
+    public API(ActivityRepo activityRepo, GrpcAnalysisClientService grpcAnalysisClientService,
+            AnalysisNotificationService analysisNotificationService) {
         this.activityRepo = activityRepo;
         this.grpcAnalysisClientService = grpcAnalysisClientService;
+        this.analysisNotificationService = analysisNotificationService;
     }
 
     @GetMapping("/all_activities")
@@ -181,6 +185,11 @@ public class API {
     }
 
     private void triggerGoAnalysis(String login) {
+        analysisNotificationService.analyzeAndNotify(login);
+    }
+
+    @SuppressWarnings("unused")
+    private void legacyTriggerGoAnalysis(String login) {
         java.net.HttpURLConnection conn = null;
         try {
             String baseUrl = analysisGatewayBaseUrl.endsWith("/")

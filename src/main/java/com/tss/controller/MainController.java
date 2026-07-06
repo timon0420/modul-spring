@@ -29,6 +29,7 @@ import com.tss.mongodb.model.Activity;
 import com.tss.mongodb.model.DailyLimits;
 import com.tss.mongodb.model.ActivityLimit;
 import com.tss.mongodb.model.Notification;
+import com.tss.service.AnalysisNotificationService;
 
 @Controller
 public class MainController {
@@ -36,6 +37,7 @@ public class MainController {
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
     private final ActivityRepo activityRepo;
+    private final AnalysisNotificationService analysisNotificationService;
 
     @Autowired
     SessionComponent sessionComponentQuery;
@@ -61,10 +63,12 @@ public class MainController {
     @Value("${analysis.gateway.base-url}")
     String analysisGatewayBaseUrl;
 
-    public MainController(UserRepo userRepo, PasswordEncoder passwordEncoder, ActivityRepo activityRepo) {
+    public MainController(UserRepo userRepo, PasswordEncoder passwordEncoder, ActivityRepo activityRepo,
+            AnalysisNotificationService analysisNotificationService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.activityRepo = activityRepo;
+        this.analysisNotificationService = analysisNotificationService;
     }
 
     @GetMapping("/")
@@ -87,7 +91,9 @@ public class MainController {
         model.addAttribute("applicationName", applicationName);
         model.addAttribute("buildVersion", buildVersion);
         model.addAttribute("buildTimestamp", buildTimestamp);
-        model.addAttribute("analysisGatewayBaseUrl", analysisGatewayBaseUrl);
+        model.addAttribute("isAdmin", principal instanceof org.springframework.security.core.Authentication
+                && ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                        .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN")));
 
         model.addAttribute("counter", sessionComponentQuery.getCounter());
 
@@ -255,6 +261,11 @@ public class MainController {
     }
 
     private void triggerGoAnalysis(String login) {
+        analysisNotificationService.analyzeAndNotify(login);
+    }
+
+    @SuppressWarnings("unused")
+    private void legacyTriggerGoAnalysis(String login) {
         java.net.HttpURLConnection conn = null;
         try {
             String baseUrl = analysisGatewayBaseUrl.endsWith("/")

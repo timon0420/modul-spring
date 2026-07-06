@@ -20,10 +20,11 @@ public class MyUserDetailsService implements UserDetailsService {
         User user = userRepo.findByLogin(login)
             .orElseThrow(() -> new UsernameNotFoundException(login));
 
+        String role = "admin".equalsIgnoreCase(user.getLogin()) ? "ADMIN" : "USER";
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getLogin())
             .password(user.getPassword())
-            .roles("USER")
+            .roles(role)
             .build();
     }
 }

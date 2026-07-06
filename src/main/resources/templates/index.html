@@ -389,7 +389,7 @@
 
     <nav>
         <a class="nav-link" th:href="@{/addActivity}">+ Dodaj Aktywność</a>
-        <a class="nav-link" th:href="@{/websocket}">Wykres Live</a>
+        <a class="nav-link" th:if="${isAdmin}" th:href="@{/admin/reports/activity.json}">Pobierz raport JSON</a>
         <a class="nav-link" th:href="@{/actuator}">System Actuator</a>
         <a class="nav-link logout" th:href="@{/logout}">Wyloguj się</a>
     </nav>
@@ -522,21 +522,15 @@
 
     <script th:inline="javascript">
         const userLogin = /*[[${login}]]*/ "";
-        const analysisGatewayBaseUrl = "https://modul-go.onrender.com"
-
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const gatewayUrl = new URL(analysisGatewayBaseUrl);
-            gatewayUrl.protocol = protocol;
-            gatewayUrl.pathname = '/ws';
-            gatewayUrl.search = `?login=${encodeURIComponent(userLogin)}`;
-            const wsUri = gatewayUrl.toString();
-            console.log("Łączenie z WebSocket mikroserwisu Go:", wsUri);
+            const wsUri = `${protocol}//${window.location.host}/ws/notifications`;
+            console.log("Łączenie z WebSocket Spring Boot:", wsUri);
 
             const ws = new WebSocket(wsUri);
 
             ws.onopen = function () {
-                console.log("Połączono z serwerem WebSocket analizatora Go.");
+                console.log("Połączono z WebSocket powiadomień Spring Boot.");
             };
 
             ws.onmessage = function (evt) {
@@ -553,12 +547,12 @@
             };
 
             ws.onclose = function () {
-                console.log("Połączenie WebSocket z Go zostało zamknięte. Ponawianie za 5 sekund...");
+                console.log("WebSocket powiadomień został zamknięty. Ponawianie za 5 sekund...");
                 setTimeout(initWebSocket, 5000);
             };
 
             ws.onerror = function (err) {
-                console.error("Błąd WebSocket Go:", err);
+                console.error("Błąd WebSocket Spring Boot:", err);
             };
         }
 
