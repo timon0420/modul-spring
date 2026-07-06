@@ -25,6 +25,7 @@ import com.tss.postgres.repo.UserRepo;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
 public class AuthenticationController {
  
     @Autowired
@@ -49,6 +50,9 @@ public class AuthenticationController {
         return new ResponseEntity<>("Logged out", HttpStatus.OK);
     }
 
+    @Operation(summary = "Login user", description = "Login user with login and password", tags = {"Authentication"})
+    @ApiResponse(responseCode = "200", description = "Logged in")
+    @ApiResponse(responseCode = "401", description = "Invalid login or password")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Authentication authenticationRequest = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.getLogin(), loginRequest.getPassword());
@@ -62,6 +66,9 @@ public class AuthenticationController {
         return new ResponseEntity<>("Logged in", HttpStatus.OK);
     }
 
+    @Operation(summary = "Register user", description = "Register user with login and password", tags = {"Authentication"})
+    @ApiResponse(responseCode = "200", description = "User registered")
+    @ApiResponse(responseCode = "400", description = "User already exists")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
         if (userRepo.findByLogin(registerRequest.getLogin()).isPresent()) {

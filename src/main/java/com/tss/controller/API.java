@@ -26,6 +26,7 @@ import com.tss.service.AnalysisNotificationService;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Activity Management", description = "Endpoints for managing user activities, limits, and notifications")
 public class API {
 
     private final ActivityRepo activityRepo;
@@ -39,17 +40,29 @@ public class API {
         this.analysisNotificationService = analysisNotificationService;
     }
 
+    @Operation(summary = "Get all user activities", description = "Returns a list of all user activities", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "List of user activities")
+    @ApiResponse(responseCode = "404", description = "No user activities found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @GetMapping("/all_activities")
     public List<UserActivity> getAllActivities() {
         return activityRepo.findAll();
     }
 
+    @Operation(summary = "Get user activity by login", description = "Returns the activity of a user by their login", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "User activity found")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
     @GetMapping("/activities")
     public UserActivity getActivityByLogin(Principal principal) {
         return activityRepo.findByLogin(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Nie znaleziono danych"));
     }
 
+    @Operation(summary = "Add user activity", description = "Adds a new activity for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Activity added")
+    @ApiResponse(responseCode = "400", description = "Invalid activity data")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @PostMapping("/activities/add")
     public String addActivity(@RequestBody Activity newActivity, Principal principal) {
         String login = principal.getName();
@@ -74,6 +87,10 @@ public class API {
         return saved.toString();
     }
 
+    @Operation(summary = "Delete user activity", description = "Deletes an existing activity for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Activity deleted")
+    @ApiResponse(responseCode = "404", description = "Activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @DeleteMapping("/activities/delete/{id}")
     public ResponseEntity<?> deleteActivity(@PathVariable String id, Principal principal) {
         String login = principal.getName();
@@ -93,6 +110,10 @@ public class API {
         return new ResponseEntity<>("Activity deleted", HttpStatus.OK);
     }
 
+    @Operation(summary = "Edit user activity", description = "Edits an existing activity for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Activity edited")
+    @ApiResponse(responseCode = "404", description = "Activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @PutMapping("/activities/edit/{id}")
     public ResponseEntity<?> editActivity(@PathVariable String id, @RequestBody Activity editedActivity,
             Principal principal) {
@@ -119,6 +140,10 @@ public class API {
         return new ResponseEntity<>("Activity edited", HttpStatus.OK);
     }
 
+    @Operation(summary = "Set user activity limits", description = "Sets activity limits for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Limits set")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @PostMapping("/limits/set")
     public ResponseEntity<?> setLimits(@RequestBody DailyLimits limitsDto, Principal principal) {
         String login = principal.getName();
@@ -165,6 +190,10 @@ public class API {
         return new ResponseEntity<>("Limits set", HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete global activity limit", description = "Deletes the global activity limit for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Global limit deleted")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @DeleteMapping("/limits/global")
     public ResponseEntity<?> deleteGlobalLimit(Principal principal) {
         UserActivity userActivity = activityRepo.findByLogin(principal.getName())
@@ -179,6 +208,10 @@ public class API {
         return new ResponseEntity<>("Global limit deleted", HttpStatus.OK);
     }
 
+    @Operation(summary = "Delete activity limit", description = "Deletes an activity limit for the logged-in user", tags = {"Activity Management"})
+    @ApiResponse(responseCode = "200", description = "Activity limit deleted")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @DeleteMapping("/limits/activity/{activityName}")
     public ResponseEntity<?> deleteActivityLimit(@PathVariable String activityName, Principal principal) {
         UserActivity userActivity = activityRepo.findByLogin(principal.getName())
@@ -202,6 +235,10 @@ public class API {
         }
     }
 
+    @Operation(summary = "Mark notification as read", description = "Marks a notification as read for the logged-in user", tags = {"Notifications"})
+    @ApiResponse(responseCode = "200", description = "Notification marked as read")
+    @ApiResponse(responseCode = "404", description = "User activity not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @PostMapping("/notifications/read/{id}")
     public ResponseEntity<?> readNotification(@PathVariable String id, Principal principal) {
         String login = principal.getName();
