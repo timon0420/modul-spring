@@ -2,6 +2,7 @@ package com.tss.mongodb.model;
 
 import java.util.Date;
 import org.springframework.data.mongodb.core.mapping.Field;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Notification {
 
@@ -14,10 +15,15 @@ public class Notification {
     private String message;
 
     @Field("created_at")
+    @JsonProperty("created_at")
     private Date createdAt;
 
     @Field("read")
     private boolean read;
+
+    @Field("limit_key")
+    @JsonProperty("limit_key")
+    private String limitKey;
 
     public Notification() {
         this.id = java.util.UUID.randomUUID().toString();
@@ -69,5 +75,13 @@ public class Notification {
 
     public void setRead(boolean read) {
         this.read = read;
+    }
+
+    public String getLimitKey() {
+        return limitKey;
+    }
+
+    public void setLimitKey(String limitKey) {
+        this.limitKey = limitKey;
     }
 }

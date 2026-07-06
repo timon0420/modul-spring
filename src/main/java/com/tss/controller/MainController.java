@@ -1,8 +1,6 @@
 package com.tss.controller;
 
 import java.security.Principal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -59,9 +57,6 @@ public class MainController {
 
     @Value("${build.timestamp}")
     String buildTimestamp;
-
-    @Value("${analysis.gateway.base-url}")
-    String analysisGatewayBaseUrl;
 
     public MainController(UserRepo userRepo, PasswordEncoder passwordEncoder, ActivityRepo activityRepo,
             AnalysisNotificationService analysisNotificationService) {
@@ -243,6 +238,45 @@ public class MainController {
         return "redirect:/";
     }
 
+    @PostMapping("/limits/delete/global")
+    public String deleteGlobalLimit(Principal principal) {
+        String login = principal.getName();
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        DailyLimits limits = userActivity.getDailyLimits();
+        if (limits != null) {
+            limits.setGlobalLimit(null);
+            removeEmptyLimits(userActivity, limits);
+            activityRepo.save(userActivity);
+            triggerGoAnalysis(login);
+        }
+        return "redirect:/";
+    }
+
+    @PostMapping("/limits/delete/activity")
+    public String deleteActivityLimit(@RequestParam String activityName, Principal principal) {
+        String login = principal.getName();
+        UserActivity userActivity = activityRepo.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        DailyLimits limits = userActivity.getDailyLimits();
+        if (limits != null && limits.getActivities() != null) {
+            limits.getActivities().removeIf(limit -> limit.getActivityName().equalsIgnoreCase(activityName));
+            removeEmptyLimits(userActivity, limits);
+            activityRepo.save(userActivity);
+            triggerGoAnalysis(login);
+        }
+        return "redirect:/";
+    }
+
+    private void removeEmptyLimits(UserActivity userActivity, DailyLimits limits) {
+        if (limits.getGlobalLimit() == null
+                && (limits.getActivities() == null || limits.getActivities().isEmpty())) {
+            userActivity.setDailyLimits(null);
+        } else {
+            userActivity.setDailyLimits(limits);
+        }
+    }
+
     @PostMapping("/notifications/read/{id}")
     public String readNotification(@PathVariable String id, Principal principal) {
         String login = principal.getName();
@@ -264,31 +298,5 @@ public class MainController {
         analysisNotificationService.analyzeAndNotify(login);
     }
 
-    @SuppressWarnings("unused")
-    private void legacyTriggerGoAnalysis(String login) {
-        java.net.HttpURLConnection conn = null;
-        try {
-            String baseUrl = analysisGatewayBaseUrl.endsWith("/")
-                    ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
-                    : analysisGatewayBaseUrl;
-            String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
-            java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(10_000);
-            conn.setReadTimeout(35_000);
-
-            int status = conn.getResponseCode();
-            if (status < 200 || status >= 300) {
-                throw new IllegalStateException("Go analysis returned HTTP " + status);
-            }
-        } catch (Exception e) {
             // Nie przerywamy zapisu aktywności, ale błąd jest widoczny w logach Rendera.
-            System.err.println("Failed to trigger Go analysis for " + login + ": " + e.getMessage());
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-    }
 }

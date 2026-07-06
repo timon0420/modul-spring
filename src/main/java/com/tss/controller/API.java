@@ -1,8 +1,6 @@
 package com.tss.controller;
 
 import java.security.Principal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.tss.mongodb.model.Activity;
 import com.tss.mongodb.model.UserActivity;
@@ -34,9 +31,6 @@ public class API {
     private final ActivityRepo activityRepo;
     private final GrpcAnalysisClientService grpcAnalysisClientService;
     private final AnalysisNotificationService analysisNotificationService;
-
-    @Value("${analysis.gateway.base-url}")
-    private String analysisGatewayBaseUrl;
 
     public API(ActivityRepo activityRepo, GrpcAnalysisClientService grpcAnalysisClientService,
             AnalysisNotificationService analysisNotificationService) {
@@ -167,6 +161,43 @@ public class API {
         return new ResponseEntity<>("Limits set", HttpStatus.OK);
     }
 
+    @DeleteMapping("/limits/global")
+    public ResponseEntity<?> deleteGlobalLimit(Principal principal) {
+        UserActivity userActivity = activityRepo.findByLogin(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        DailyLimits limits = userActivity.getDailyLimits();
+        if (limits != null) {
+            limits.setGlobalLimit(null);
+            removeEmptyLimits(userActivity, limits);
+            activityRepo.save(userActivity);
+            triggerGoAnalysis(principal.getName());
+        }
+        return new ResponseEntity<>("Global limit deleted", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/limits/activity/{activityName}")
+    public ResponseEntity<?> deleteActivityLimit(@PathVariable String activityName, Principal principal) {
+        UserActivity userActivity = activityRepo.findByLogin(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+        DailyLimits limits = userActivity.getDailyLimits();
+        if (limits != null && limits.getActivities() != null) {
+            limits.getActivities().removeIf(limit -> limit.getActivityName().equalsIgnoreCase(activityName));
+            removeEmptyLimits(userActivity, limits);
+            activityRepo.save(userActivity);
+            triggerGoAnalysis(principal.getName());
+        }
+        return new ResponseEntity<>("Activity limit deleted", HttpStatus.OK);
+    }
+
+    private void removeEmptyLimits(UserActivity userActivity, DailyLimits limits) {
+        if (limits.getGlobalLimit() == null
+                && (limits.getActivities() == null || limits.getActivities().isEmpty())) {
+            userActivity.setDailyLimits(null);
+        } else {
+            userActivity.setDailyLimits(limits);
+        }
+    }
+
     @PostMapping("/notifications/read/{id}")
     public ResponseEntity<?> readNotification(@PathVariable String id, Principal principal) {
         String login = principal.getName();
@@ -188,30 +219,4 @@ public class API {
         analysisNotificationService.analyzeAndNotify(login);
     }
 
-    @SuppressWarnings("unused")
-    private void legacyTriggerGoAnalysis(String login) {
-        java.net.HttpURLConnection conn = null;
-        try {
-            String baseUrl = analysisGatewayBaseUrl.endsWith("/")
-                    ? analysisGatewayBaseUrl.substring(0, analysisGatewayBaseUrl.length() - 1)
-                    : analysisGatewayBaseUrl;
-            String encodedLogin = URLEncoder.encode(login, StandardCharsets.UTF_8);
-            java.net.URL url = new java.net.URL(baseUrl + "/analyze?login=" + encodedLogin);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(10_000);
-            conn.setReadTimeout(35_000);
-
-            int status = conn.getResponseCode();
-            if (status < 200 || status >= 300) {
-                throw new IllegalStateException("Go analysis returned HTTP " + status);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to trigger Go analysis for " + login + ": " + e.getMessage());
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-    }
 }

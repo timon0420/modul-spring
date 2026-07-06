@@ -450,12 +450,20 @@
                         <span class="limit-name">Limit Globalny:</span>
                         <span class="limit-val"
                             th:text="${data.dailyLimits != null && data.dailyLimits.globalLimit != null ? data.dailyLimits.globalLimit + ' min' : 'Brak'}">Brak</span>
+                        <form th:if="${data.dailyLimits != null && data.dailyLimits.globalLimit != null}"
+                            th:action="@{/limits/delete/global}" method="post">
+                            <button type="submit" class="btn-dismiss">Usuń</button>
+                        </form>
                     </div>
 
                     <div th:if="${data.dailyLimits != null && data.dailyLimits.activities != null}">
                         <div th:each="lim : ${data.dailyLimits.activities}" class="limit-item">
                             <span class="limit-name" th:text="${lim.activityName}">Aktywność</span>
                             <span class="limit-val" th:text="${lim.limit + ' min'}">0 min</span>
+                            <form th:action="@{/limits/delete/activity}" method="post">
+                                <input type="hidden" name="activityName" th:value="${lim.activityName}">
+                                <button type="submit" class="btn-dismiss">Usuń</button>
+                            </form>
                         </div>
                     </div>
                 </div>

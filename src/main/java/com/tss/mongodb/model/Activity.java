@@ -60,7 +60,7 @@ public class Activity {
     }
 
     public Object getTime() {
-        return time.toString();
+        return time;
     }
 
     public void setTime(Number time) {
