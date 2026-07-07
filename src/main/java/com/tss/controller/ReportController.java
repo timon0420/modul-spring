@@ -3,7 +3,9 @@ package com.tss.controller;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -81,8 +83,17 @@ public class ReportController {
 
         try {
             String encodedLogin = UriUtils.encodePathSegment(login.trim(), StandardCharsets.UTF_8);
-            restTemplate.exchange(gatewayUri("/users/" + encodedLogin), HttpMethod.DELETE, HttpEntity.EMPTY, String.class);
-            redirectAttributes.addFlashAttribute("adminSuccess", "Użytkownik " + login.trim() + " został usunięty z MongoDB.");
+            ResponseEntity<Map<String, Integer>> response = restTemplate.exchange(
+                    gatewayUri("/users/" + encodedLogin),
+                    HttpMethod.DELETE,
+                    HttpEntity.EMPTY,
+                    new ParameterizedTypeReference<Map<String, Integer>>() {});
+            Integer deleted = response.getBody() == null ? 0 : response.getBody().getOrDefault("deleted", 0);
+            if (deleted > 0) {
+                redirectAttributes.addFlashAttribute("adminSuccess", "Użytkownik " + login.trim() + " został usunięty z MongoDB.");
+            } else {
+                redirectAttributes.addFlashAttribute("adminSuccess", "W MongoDB nie znaleziono danych dla loginu " + login.trim() + ".");
+            }
         } catch (RestClientException ex) {
             redirectAttributes.addFlashAttribute("adminError", "Nie udało się usunąć użytkownika: " + ex.getMessage());
         }
