@@ -26,7 +26,7 @@ public class SecurityConfig {
         http.cors().and()
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/register", "/api/auth/**").permitAll()
+                .antMatchers("/register", "/api/auth/**", "/swagger-ui/index.html").permitAll()
                 .antMatchers("/api/**").authenticated()
                 .anyRequest()
                 .authenticated()

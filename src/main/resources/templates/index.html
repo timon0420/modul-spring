@@ -246,6 +246,41 @@
             border-color: var(--accent);
         }
 
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            color: #065f46;
+            background-color: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .alert-error {
+            color: #991b1b;
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .admin-actions {
+            display: grid;
+            gap: 14px;
+        }
+
+        .admin-actions form {
+            border-top: 1px solid var(--border-color);
+            padding-top: 14px;
+        }
+
+        .admin-actions form:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
         .limits-list {
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
@@ -394,6 +429,9 @@
         <a class="nav-link logout" th:href="@{/logout}">Wyloguj się</a>
     </nav>
 
+    <div th:if="${adminSuccess}" class="alert alert-success" th:text="${adminSuccess}"></div>
+    <div th:if="${adminError}" class="alert alert-error" th:text="${adminError}"></div>
+
     <div class="dashboard-grid">
 
         <div class="card">
@@ -442,6 +480,32 @@
         </div>
 
         <div>
+            <div class="card" th:if="${isAdmin}">
+                <div class="card-title">Panel administratora MongoDB</div>
+
+                <div class="admin-actions">
+                    <form th:action="@{/admin/reports/import}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="jsonFile">Import danych z pliku JSON:</label>
+                            <input type="file" id="jsonFile" name="file" class="form-control" accept="application/json,.json" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Wgraj dane do MongoDB</button>
+                    </form>
+
+                    <form th:action="@{/admin/reports/users/delete}" method="post">
+                        <div class="form-group">
+                            <label for="deleteLogin">Usuń użytkownika po loginie:</label>
+                            <input type="text" id="deleteLogin" name="login" class="form-control" placeholder="login" required>
+                        </div>
+                        <button type="submit" class="btn btn-delete">Usuń użytkownika</button>
+                    </form>
+
+                    <form th:action="@{/admin/reports/database/clear}" method="post">
+                        <button type="submit" class="btn btn-delete">Wyczyść całą bazę MongoDB</button>
+                    </form>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-title">Dobowe Limity Czasu</div>
 
