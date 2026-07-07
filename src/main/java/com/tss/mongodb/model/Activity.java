@@ -52,7 +52,7 @@ public class Activity {
     }
 
     public Object getStart_time() {
-        return start_time.toString();
+        return start_time == null ? "" : start_time.toString();
     }
 
     public void setStart_time(Object starTime) {

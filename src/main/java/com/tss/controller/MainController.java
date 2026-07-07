@@ -76,6 +76,12 @@ public class MainController {
             newUA.setActivities(new ArrayList<>());
             return newUA;
         });
+        if (userActivity.getActivities() == null) {
+            userActivity.setActivities(new ArrayList<>());
+        }
+        if (userActivity.getNotifications() == null) {
+            userActivity.setNotifications(new ArrayList<>());
+        }
 
         sessionComponentQuery.incrementCounter();
 
