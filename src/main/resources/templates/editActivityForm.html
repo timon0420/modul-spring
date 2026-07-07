@@ -7,131 +7,86 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #2d3748;
-            --text-muted: #718096;
-            --accent: #4f46e5;
-            --accent-hover: #4338ca;
-            --border-color: #e2e8f0;
-        }
-
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            font-family: 'Outfit', Arial, sans-serif;
+            color: #202124;
+            background: #f7f7f8;
             line-height: 1.5;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         .container {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 40px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        header,
+        .card {
+            border: 1px solid #d9dde3;
+            background: #fff;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         header {
             display: flex;
             justify-content: space-between;
+            gap: 12px;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-            width: 100%;
         }
 
         h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-main);
+            margin: 0;
+            font-size: 1.35rem;
         }
 
-        nav {
-            display: flex;
-            margin-bottom: 24px;
-        }
-
-        .nav-link {
+        .nav-link,
+        .btn-primary {
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #d9dde3;
+            background: #fff;
+            color: #202124;
+            font: inherit;
             text-decoration: none;
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 8px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
-        .nav-link:hover {
-            color: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        .nav-link:hover,
+        .btn-primary:hover {
+            color: #2563eb;
+            border-color: #2563eb;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
-        .form-group label {
+        label {
             display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 500;
+            margin-bottom: 4px;
+            color: #6b7280;
         }
 
         .form-control {
             width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
-            background-color: #fff;
-            color: var(--text-main);
+            padding: 8px 10px;
+            border: 1px solid #d9dde3;
+            font: inherit;
         }
 
         .form-control:focus {
-            border-color: var(--accent);
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
         }
 
         .btn-primary {
-            background-color: var(--accent);
-            color: white;
             width: 100%;
-            padding: 12px;
-            border: 1px solid transparent;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-family: inherit;
-            margin-top: 8px;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
         }
     </style>
 </head>

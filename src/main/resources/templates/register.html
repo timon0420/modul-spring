@@ -4,6 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejestracja</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, sans-serif;
+            color: #202124;
+            background: #f7f7f8;
+            line-height: 1.5;
+        }
+
+        form {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 16px;
+            border: 1px solid #d9dde3;
+            background: #fff;
+        }
+
+        label {
+            display: block;
+            margin: 0 0 4px;
+            color: #6b7280;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            border: 1px solid #d9dde3;
+            font: inherit;
+        }
+
+        input:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9dde3;
+            background: #fff;
+            color: #202124;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        button:hover {
+            color: #2563eb;
+            border-color: #2563eb;
+        }
+    </style>
 </head>
 <body>
     <form th:action="@{/register}" th:object="${user}" method="post">
